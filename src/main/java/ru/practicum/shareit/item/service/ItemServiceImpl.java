@@ -13,6 +13,7 @@ import ru.practicum.shareit.user.dal.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.storage.InMemoryUserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,6 +85,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItemByText(String text) {
+        if (text == null || text.isBlank()) {
+            return new ArrayList<>();
+        } else {
+            text = text.toLowerCase();
+        }
+
         return itemDbStorage.getItemByText(text).stream()
                 .map(ItemMapper::mapToItemDto)
                 .collect(Collectors.toList());
