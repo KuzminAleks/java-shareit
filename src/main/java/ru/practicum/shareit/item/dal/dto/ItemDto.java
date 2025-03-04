@@ -1,20 +1,22 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
 
 /**
  * TODO Sprint add-controllers.
  */
 @Data
-public class Item {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ItemDto {
     Integer id;
     String name;
     String description;
     @JsonProperty(value = "available", required = true)
-    boolean available;
-    User userOwner;
+    Boolean available;
     ItemRequest request;
 }
