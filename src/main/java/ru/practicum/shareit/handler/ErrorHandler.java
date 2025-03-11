@@ -10,37 +10,35 @@ import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.InternalServerException;
 
-import java.util.Map;
-
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handelConflictError(ConflictException e) {
-        return Map.of("error", e.getMessage());
+    public ErrorResponse handelConflictError(ConflictException e) {
+        return new ErrorResponse("Конфликт.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleNotFoundError(NotFoundException e) {
-        return Map.of("error", e.getMessage());
+    public ErrorResponse handleNotFoundError(NotFoundException e) {
+        return new ErrorResponse("Не найден.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleBadRequestError(BadRequestException e) {
-        return Map.of("error", e.getMessage());
+    public ErrorResponse handleBadRequestError(BadRequestException e) {
+        return new ErrorResponse("Переданные параметры неправильные.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleJsonMappingException(JsonMappingException e) {
-        return Map.of("error", e.getMessage());
+    public ErrorResponse handleJsonMappingException(JsonMappingException e) {
+        return new ErrorResponse("Ошибка JSON.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleInternalServerException(InternalServerException e) {
-        return Map.of("error", e.getMessage());
+    public ErrorResponse handleInternalServerException(InternalServerException e) {
+        return new ErrorResponse("Проблемы с сервером.", e.getMessage());
     }
 }

@@ -13,6 +13,8 @@ public class ItemDbStorage {
     Map<Integer, Item> itemMap = new HashMap<>();
 
     public Item addItem(Item item) {
+        item.setId(getNextId());
+
         itemMap.put(item.getId(), item);
 
         return item;
@@ -42,7 +44,13 @@ public class ItemDbStorage {
                 .collect(Collectors.toList());
     }
 
-    public Map<Integer, Item> getAllItems() {
-        return itemMap;
+    private int getNextId() {
+        int currentMaxId = itemMap.keySet()
+                .stream()
+                .mapToInt(id -> id)
+                .max()
+                .orElse(0);
+
+        return ++currentMaxId;
     }
 }

@@ -22,7 +22,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestBody @Valid ItemDto item) {
+    public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Integer userId, @Valid @RequestBody ItemDto item) {
         return memStorage.addItem(userId, item);
     }
 
@@ -39,11 +39,11 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getItemOfOwner(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return memStorage.getItemOfOwner(userId);
+        return memStorage.getItemsOfOwner(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemByText(@RequestParam("text") String text) {
-        return memStorage.getItemByText(text);
+        return memStorage.getItemsByText(text);
     }
 }

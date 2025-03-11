@@ -11,7 +11,7 @@ public interface ItemService {
 
     ItemDto getItemById(Integer itemId);
 
-    List<ItemDto> getItemOfOwner(Integer userId);
+    List<ItemDto> getItemsOfOwner(Integer userId);
 
-    List<ItemDto> getItemByText(String text);
+    List<ItemDto> getItemsByText(String text);
 }
