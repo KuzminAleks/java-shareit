@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Аренда с id: " + bookingId + " не найдена."));
 
         userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("Пользователя с id: "+ userId +" не существует."));
+                .orElseThrow(() -> new BadRequestException("Пользователя с id: " + userId + " не существует."));
 
         Item item = oldBooking.getItem();
 
@@ -113,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingStatusDto> getBookingStatus(Integer userId, String state) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("Пользователя с id: "+ userId +" не существует."));
+                .orElseThrow(() -> new BadRequestException("Пользователя с id: " + userId + " не существует."));
 
         List<Booking> sortedBooking = bookingRepository.getAllBookingOfBooker(userId);
 
@@ -153,7 +153,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingStatusDto> getBookingStatusOfOwner(Integer userId, String state) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id: "+ userId +" не существует."));
+                .orElseThrow(() -> new NotFoundException("Пользователя с id: " + userId + " не существует."));
 
         List<Booking> sortedBooking = bookingRepository.findBookingsByOwner(userId);
 
