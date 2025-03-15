@@ -20,7 +20,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -80,44 +79,10 @@ public class ItemServiceImpl implements ItemService {
                 .filter(booking -> booking.getItem().equals(item))
                 .toList();
 
-        Optional<Booking> lastBookingOptional = bookings.stream()
-                .filter(booking -> booking.getItem().equals(item))
-                .filter(booking -> booking.getEndTime().isBefore(LocalDateTime.now()))
-                .max(Comparator.comparing(Booking::getEndTime));
-
-        Optional<Booking> nextBookingOptional = bookings.stream()
-                .filter(booking -> booking.getItem().equals(item))
-                .filter(booking -> booking.getStartTime().isAfter(LocalDateTime.now()))
-                .min(Comparator.comparing(Booking::getStartTime));
-
-//        List<CommentDto> comments = commentRepository.findByItem(item).stream()
-//                .map(CommentMapper::mapToItemWithComments)
-//                .peek(commentDto -> {
-//                    LocalDateTime lastBooking = bookings.stream()
-//                            .map(Booking::getEndTime)
-//                            .filter(endTime -> endTime.isBefore(LocalDateTime.now()))
-//                            .max(LocalDateTime::compareTo)
-//                            .orElse(null);
-//                    commentDto.setLastBooking(lastBooking);
-//                })
-//                .peek(commentDto -> {
-//                    LocalDateTime nextBooking = bookings.stream()
-//                            .map(Booking::getStartTime)
-//                            .filter(startTime -> startTime.isAfter(LocalDateTime.now()))
-//                            .min(LocalDateTime::compareTo)
-//                            .orElse(null);
-//                    commentDto.setNextBooking(nextBooking);
-//                })
-//                .toList();
-
-
         ItemDto itemDto = ItemMapper.mapToItemDto(item);
         itemDto.setComments(comments);
         itemDto.setNextBooking(null);
         itemDto.setLastBooking(null);
-
-//        lastBookingOptional.ifPresent(booking -> itemDto.setLastBooking(booking.getEndTime()));
-//        nextBookingOptional.ifPresent(booking -> itemDto.setNextBooking(booking.getStartTime()));
 
         return itemDto;
     }
@@ -151,10 +116,6 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id: " + itemId + " не найден."));
-
-//        Booking booking = bookingRepository.findAll().stream()
-//                .filter(booking1 -> booking1.getBooker().equals(user) && booking1.getItem().equals(item))
-//                .findFirst().orElseThrow();
 
         List<Booking> userBooking = bookingRepository.findByBookerAndItem(user, item);
 
