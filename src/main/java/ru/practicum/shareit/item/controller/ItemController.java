@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dal.dto.ItemDto;
-import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
-    private final ItemServiceImpl memStorage;
+    private final ItemService memStorage;
 
     @Autowired
-    public ItemController(ItemServiceImpl itemStorage) {
+    public ItemController(ItemService itemStorage) {
         memStorage = itemStorage;
     }
 
