@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.status.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -15,20 +14,15 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingStatusDto {
+public class CommentCreatedDto {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     Integer id;
+    @NotBlank
+    String text;
+    @NotBlank
+    Item item;
     @NotNull
-    @JsonProperty("start")
-    LocalDateTime startTime;
+    String authorName;
     @NotNull
-    @JsonProperty("end")
-    LocalDateTime endTime;
-    @NotNull
-    BookingStatus status;
-    @NotNull
-    @JsonProperty("booker")
-    User bookerId;
-    @NotNull
-    @JsonProperty("item")
-    Item itemId;
+    LocalDateTime created;
 }
