@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingStatusDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.status.BookingState;
 import ru.practicum.shareit.booking.status.BookingStatus;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -155,36 +156,28 @@ public class BookingServiceImpl implements BookingService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с id: " + userId + " не существует."));
 
-        List<Booking> sortedBooking = bookingRepository.findBookingsByOwner(userId);
-
-        return switch (state) {
-            case "CURRENT" -> sortedBooking.stream()
-                    .filter(booking -> (booking.getStartTime().isBefore(LocalDateTime.now())
-                            && booking.getEndTime().isAfter(LocalDateTime.now()))
-                            || (booking.getStartTime().equals(LocalDateTime.now())
-                            || booking.getEndTime().equals(LocalDateTime.now()))
-                            && booking.getStatus().equals(BookingStatus.APPROVED))
+        return switch (BookingState.valueOf(state)) {
+            case BookingState.CURRENT -> bookingRepository.findCurrentBookings(userId,
+                            LocalDateTime.now(), BookingStatus.APPROVED.ordinal()).stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
-            case "PAST" -> sortedBooking.stream()
-                    .filter(booking -> booking.getEndTime().isBefore(LocalDateTime.now())
-                            && booking.getStatus().equals(BookingStatus.APPROVED))
+            case BookingState.PAST -> bookingRepository.findPastBookings(userId,
+                            LocalDateTime.now(), BookingStatus.APPROVED.ordinal()).stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
-            case "FUTURE" -> sortedBooking.stream()
-                    .filter(booking -> booking.getStartTime().isAfter(LocalDateTime.now())
-                            && booking.getStatus().equals(BookingStatus.APPROVED))
+            case BookingState.FUTURE -> bookingRepository.findFutureBookings(userId,
+                            LocalDateTime.now(), BookingStatus.APPROVED.ordinal()).stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
-            case "WAITING" -> sortedBooking.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.WAITING))
+            case BookingState.WAITING -> bookingRepository.findWaitingBookings(userId, BookingStatus.APPROVED.ordinal())
+                    .stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
-            case "REJECTED" -> sortedBooking.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.REJECTED))
+            case BookingState.REJECTED -> bookingRepository.findRejectedBookings(userId,
+                            BookingStatus.APPROVED.ordinal()).stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
-            default -> sortedBooking.stream()
+            default -> bookingRepository.findBookingsByOwner(userId).stream()
                     .map(BookingMapper::mapToBookingStatusDto)
                     .collect(Collectors.toList());
         };
