@@ -47,10 +47,6 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Дата начала аренды не может быть равна дате конца аренды.");
         }
 
-        if (bookingDto.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Дата начала аренды не может быть в прошлом относительно нынешней даты.");
-        }
-
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Предмет с id: " + bookingDto.getItemId() + " не найден."));
 

@@ -75,10 +75,6 @@ public class ItemServiceImpl implements ItemService {
                 .map(CommentMapper::mapToItemWithComments)
                 .toList();
 
-        List<Booking> bookings = bookingRepository.findAll().stream()
-                .filter(booking -> booking.getItem().equals(item))
-                .toList();
-
         ItemDto itemDto = ItemMapper.mapToItemDto(item);
         itemDto.setComments(comments);
         itemDto.setNextBooking(null);
@@ -117,10 +113,11 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id: " + itemId + " не найден."));
 
-        List<Booking> userBooking = bookingRepository.findByBookerAndItem(user, item);
+        List<Booking> bookingList = bookingRepository.findBookerAndItem(user.getId(), item.getId(),
+                LocalDateTime.now());
 
-        if (!userBooking.isEmpty()) {
-            if (userBooking.getFirst().getEndTime().isBefore(LocalDateTime.now())) {
+        if (!bookingList.isEmpty()) {
+            if (bookingList.getFirst().getEndTime().isBefore(LocalDateTime.now())) {
                 Comment newComment = new Comment();
 
                 newComment.setItem(item);

@@ -3,14 +3,16 @@ package ru.practicum.shareit.booking.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findByBookerAndItem(User booker, Item item);
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.item.id = ?2 " +
+            "AND b.booker.id = ?1 " +
+            "AND b.endTime < ?3")
+    List<Booking> findBookerAndItem(Integer bookerId, Integer itemId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b " +
             "JOIN item i " +
