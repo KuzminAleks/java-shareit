@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.dal.dto;
+package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -6,15 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class CommentDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     Integer id;
     @NotBlank
@@ -24,5 +20,6 @@ public class ItemDto {
     @JsonProperty(value = "available", required = true)
     @NotNull
     Boolean available;
-    ItemRequest request;
+    @NotNull
+    String comment;
 }

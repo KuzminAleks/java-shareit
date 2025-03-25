@@ -5,23 +5,29 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.status.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto {
+public class BookingStatusDto {
     Integer id;
-    @NotNull
-    Integer itemId;
     @NotNull
     @JsonProperty("start")
     LocalDateTime startTime;
     @NotNull
     @JsonProperty("end")
     LocalDateTime endTime;
+    @NotNull
+    BookingStatus status;
+    @NotNull
+    @JsonProperty("booker")
+    User bookerId;
+    @NotNull
+    @JsonProperty("item")
+    Item itemId;
 }

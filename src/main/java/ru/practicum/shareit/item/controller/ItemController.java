@@ -3,8 +3,9 @@ package ru.practicum.shareit.item.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dal.dto.ItemDto;
-import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.item.dto.CommentCreatedDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
@@ -14,36 +15,42 @@ import java.util.List;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
-    private final ItemServiceImpl memStorage;
+    private final ItemService itemService;
 
     @Autowired
-    public ItemController(ItemServiceImpl itemStorage) {
-        memStorage = itemStorage;
+    public ItemController(ItemService itemStorage) {
+        itemService = itemStorage;
     }
 
     @PostMapping
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Integer userId, @Valid @RequestBody ItemDto item) {
-        return memStorage.addItem(userId, item);
+        return itemService.addItem(userId, item);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@PathVariable Integer itemId, @RequestHeader("X-Sharer-User-Id") Integer userId,
                               @RequestBody ItemDto item) {
-        return memStorage.updateItem(itemId, userId, item);
+        return itemService.updateItem(itemId, userId, item);
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getItemById(@PathVariable Integer itemId) {
-        return memStorage.getItemById(itemId);
+        return itemService.getItemById(itemId);
     }
 
     @GetMapping
     public List<ItemDto> getItemOfOwner(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return memStorage.getItemsOfOwner(userId);
+        return itemService.getItemsOfOwner(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemByText(@RequestParam("text") String text) {
-        return memStorage.getItemsByText(text);
+        return itemService.getItemsByText(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentCreatedDto addComment(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId,
+                                        @RequestBody CommentCreatedDto comment) {
+        return itemService.addComment(userId, itemId, comment);
     }
 }

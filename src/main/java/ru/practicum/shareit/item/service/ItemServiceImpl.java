@@ -2,14 +2,23 @@ package ru.practicum.shareit.item.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dal.dao.ItemDbStorage;
-import ru.practicum.shareit.item.dal.dto.ItemDto;
+import ru.practicum.shareit.item.dto.CommentCreatedDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.InMemoryUserStorage;
+import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,54 +26,67 @@ import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
-    InMemoryUserStorage userStorage;
-    ItemDbStorage itemDbStorage;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemDbStorage itemDbStorage, InMemoryUserStorage userStorage) {
-        this.itemDbStorage = itemDbStorage;
-        this.userStorage = userStorage;
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository,
+                           CommentRepository commentRepository, BookingRepository bookingRepository) {
+        this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
     public ItemDto addItem(Integer userId, ItemDto item) {
         Item newItem = ItemMapper.mapToItem(item);
 
-        User user = userStorage.getUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден."));
 
-        if (user != null) {
-            newItem.setUserOwner(user);
-        } else {
-            throw new NotFoundException("Пользователь с id: " + userId + " не найден.");
-        }
+        newItem.setUserOwner(user);
 
-        return ItemMapper.mapToItemDto(itemDbStorage.addItem(newItem));
+        return ItemMapper.mapToItemDto(itemRepository.save(newItem));
     }
 
     @Override
     public ItemDto updateItem(Integer itemId, Integer userId, ItemDto item) {
-        if (itemDbStorage.getItemById(itemId).getUserOwner().getId().equals(userId)) {
-            Item oldItem = itemDbStorage.getItemById(itemId);
+        Item oldItem = itemRepository.findById(itemId)
+                .filter(i -> i.getUserOwner().getId().equals(userId))
+                .orElseThrow(() -> new NotFoundException("Предмет с id: " + itemId + " не найден."));
 
-            Optional.ofNullable(item.getName()).ifPresent(oldItem::setName);
-            Optional.ofNullable(item.getDescription()).ifPresent(oldItem::setDescription);
-            Optional.ofNullable(item.getAvailable()).ifPresent(oldItem::setAvailable);
-            Optional.ofNullable(item.getRequest()).ifPresent(oldItem::setRequest);
+        Optional.ofNullable(item.getName()).ifPresent(oldItem::setName);
+        Optional.ofNullable(item.getDescription()).ifPresent(oldItem::setDescription);
+        Optional.ofNullable(item.getAvailable()).ifPresent(oldItem::setAvailable);
+        Optional.ofNullable(item.getRequest()).ifPresent(oldItem::setRequest);
 
-            return ItemMapper.mapToItemDto(itemDbStorage.updateItem(oldItem));
-        } else {
-            throw new NotFoundException("Предмет с id: " + itemId + " не найден.");
-        }
+        return ItemMapper.mapToItemDto(itemRepository.save(oldItem));
     }
 
     @Override
     public ItemDto getItemById(Integer itemId) {
-        return ItemMapper.mapToItemDto(itemDbStorage.getItemById(itemId));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с id: " + itemId + " не найден."));
+
+        List<CommentDto> comments = commentRepository.findByItem(item).stream()
+                .map(CommentMapper::mapToItemWithComments)
+                .toList();
+
+        ItemDto itemDto = ItemMapper.mapToItemDto(item);
+        itemDto.setComments(comments);
+        itemDto.setNextBooking(null);
+        itemDto.setLastBooking(null);
+
+        return itemDto;
     }
 
     @Override
     public List<ItemDto> getItemsOfOwner(Integer userId) {
-        return itemDbStorage.getItemOfOwner(userId).stream()
+        return itemRepository.findAll().stream()
+                .filter(item -> item.getUserOwner().getId().equals(userId))
                 .map(ItemMapper::mapToItemDto)
                 .collect(Collectors.toList());
     }
@@ -73,12 +95,40 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getItemsByText(String text) {
         if (text == null || text.isBlank()) {
             return new ArrayList<>();
-        } else {
-            text = text.toLowerCase();
         }
 
-        return itemDbStorage.getItemByText(text).stream()
+        return itemRepository.findAll().stream()
+                .filter(Item::isAvailable)
+                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase())
+                        || item.getDescription().toLowerCase().contains(text.toLowerCase()))
                 .map(ItemMapper::mapToItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentCreatedDto addComment(Integer userId, Integer itemId, CommentCreatedDto comment) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден."));
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с id: " + itemId + " не найден."));
+
+        List<Booking> bookingList = bookingRepository.findBookerAndItem(user.getId(), item.getId(),
+                LocalDateTime.now());
+
+        if (!bookingList.isEmpty()) {
+            if (bookingList.getFirst().getEndTime().isBefore(LocalDateTime.now())) {
+                Comment newComment = new Comment();
+
+                newComment.setItem(item);
+                newComment.setAuthor(user);
+                newComment.setText(comment.getText());
+                newComment.setCreated(LocalDateTime.now());
+
+                return CommentMapper.mapToCommentCreatedDto(commentRepository.save(newComment));
+            }
+        }
+
+        throw new BadRequestException("Пользователь не пользовался вещью.");
     }
 }
