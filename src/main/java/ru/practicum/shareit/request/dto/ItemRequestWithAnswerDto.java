@@ -5,17 +5,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemRequestDto {
+public class ItemRequestWithAnswerDto {
     Integer id;
     @NotBlank
     String description;
@@ -23,4 +22,5 @@ public class ItemRequestDto {
     User user;
     @NotNull
     LocalDateTime createTime;
+    List<Item> answerItem;
 }
