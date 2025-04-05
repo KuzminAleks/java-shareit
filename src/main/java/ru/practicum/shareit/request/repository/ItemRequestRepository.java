@@ -8,11 +8,20 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import java.util.List;
 
 public interface ItemRequestRepository extends JpaRepository<ItemRequest, Integer> {
-    List<ItemRequest> findByRequestor_Id(Integer userId);
+    List<ItemRequest> findByRequestorIdOrderByCreateTimeDesc(Integer userId);
 
-    @Query("SELECT r.description, r.createTime, i.id, i.name, i.userOwner \n" +
+    List<ItemRequest> findOrderByCreateTimeDesc();
+
+    @Query("SELECT r.description, r.createTime, i \n" +
             "FROM ItemRequest r \n" +
             "LEFT JOIN Item i ON i.request.id = r.id\n" +
             "WHERE r.requestor.id = :id")
-    List<ItemRequest> findRequestsWithItems(@Param("requestorId") Integer requestorId);
+    List<ItemRequest> findRequestsWithItems(@Param("id") Integer requestorId);
+
+    @Query("SELECT r FROM ItemRequest r " +
+            "LEFT JOIN Item i ON i.request.id = r.id " +
+            "WHERE r.requestor.id = :id")
+    List<ItemRequest> findItems(@Param("id") Integer id);
+
+
 }

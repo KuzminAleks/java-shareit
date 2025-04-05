@@ -15,6 +15,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -30,24 +31,34 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository requestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository,
-                           CommentRepository commentRepository, BookingRepository bookingRepository) {
+                           CommentRepository commentRepository, BookingRepository bookingRepository,
+                           ItemRequestRepository requestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.bookingRepository = bookingRepository;
+        this.requestRepository = requestRepository;
     }
 
     @Override
-    public ItemDto addItem(Integer userId, ItemDto item) {
+    public ItemDto addItem(Integer userId, ItemDto item, Integer requestId) {
         Item newItem = ItemMapper.mapToItem(item);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден."));
 
         newItem.setUserOwner(user);
+
+        if (requestId != null) {
+            newItem.setRequest(requestRepository.findById(requestId)
+                    .orElseThrow(() -> new NotFoundException("Запрос с id: " + requestId + " не найден.")));
+        } else {
+            newItem.setRequest(null);
+        }
 
         return ItemMapper.mapToItemDto(itemRepository.save(newItem));
     }

@@ -19,8 +19,6 @@ public class ItemRequestWithAnswerDto {
     @NotBlank
     String description;
     @NotNull
-    User user;
-    @NotNull
     LocalDateTime createTime;
     List<Item> answerItem;
 }
